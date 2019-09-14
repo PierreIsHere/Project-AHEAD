@@ -142,6 +142,14 @@ float prevypr[3] = {0,0,0};
 float overflowOffset[3] = {0,0,0}; //offset added to angles when they overflow
 float output[3] = {0,0,0};
 float prevOutput[3] = {0,0,0};
+
+float resetProgress=0;
+float resetCheckpoint=10;
+unsigned long resetStart = 0;
+float resetMax = 30;
+float resetValue;
+float prevResetValue = 0;
+    
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
 
@@ -184,21 +192,21 @@ void setup() {
     // crystal solution for the UART timer.
 
     // initialize device
-    Serial.println(F("Initializing I2C devices..."));
+    //Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
 
     // verify connection
-    Serial.println(F("Testing device connections..."));
-    Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+    //Serial.println(F("Testing device connections..."));
+    //Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
     // wait for ready
-    Serial.println(F("\nSend any character to begin DMP programming and demo: "));
+    /*Serial.println(F("\nSend any character to begin DMP programming and demo: "));
     while (Serial.available() && Serial.read()); // empty buffer
     while (!Serial.available());                 // wait for data
-    while (Serial.available() && Serial.read()); // empty buffer again
+    while (Serial.available() && Serial.read()); // empty buffer again*/
 
     // load and configure the DMP
-    Serial.println(F("Initializing DMP..."));
+    //Serial.println(F("Initializing DMP..."));
     devStatus = mpu.dmpInitialize();
 
     // supply your own gyro offsets here, scaled for min sensitivity
@@ -210,16 +218,16 @@ void setup() {
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // turn on the DMP, now that it's ready
-        Serial.println(F("Enabling DMP..."));
+        //Serial.println(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);
 
         // enable Arduino interrupt detection
-        Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
+        //Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
         attachInterrupt(0, dmpDataReady, RISING);
         mpuIntStatus = mpu.getIntStatus();
 
         // set our DMP Ready flag so the main loop() function knows it's okay to use it
-        Serial.println(F("DMP ready! Waiting for first interrupt..."));
+        //Serial.println(F("DMP ready! Waiting for first interrupt..."));
         dmpReady = true;
 
         // get expected DMP packet size for later comparison
@@ -351,14 +359,34 @@ for(int i=0;i<3;i++){
 }
 output[0] = ypr[0] + overflowOffset[0] - millis()/600;
 if(abs(output[0]-prevOutput[0])>50){
-  Serial.print("ERROR");Serial.print(output[0]-prevOutput[0]);Serial.print("!!!!!!!!!!!!!!!!!!!");
+  //Serial.print("ERROR");Serial.print(output[0]-prevOutput[0]);Serial.print("!!!!!!!!!!!!!!!!!!!");
   overflowOffset[0] -= output[0]-prevOutput[0];
 }
+
+resetProgress = millis()/100-resetStart;
+if(resetProgress>resetCheckpoint){
+    if(resetCheckpoint<resetMax){
+        resetValue = ypr[0] + overflowOffset[0] - millis()/600;
+        resetCheckpoint+=10;
+        //Serial.println("__________________________________________________________________________");
+        if(abs(resetValue-prevResetValue)>20){
+          resetProgress=0;
+          resetCheckpoint=10;
+          resetStart = millis()/100;
+        }
+        prevResetValue=resetValue;
+    }else{
+        resetProgress=0;
+        resetCheckpoint=10;
+        resetStart = millis()/100;
+        //Serial.println("RESET!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        overflowOffset[0]-=prevOutput[0];
+    }
+}
+
 output[0] = ypr[0] + overflowOffset[0] - millis()/600;
 
             Serial.print(ypr[0] + overflowOffset[0] - millis()/600);
-            Serial.print(",");
-            Serial.print(prevOutput[0]);
             Serial.print(",");
             Serial.print(ypr[1] + overflowOffset[1]);
             Serial.print(",");
