@@ -140,7 +140,8 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 
 float prevypr[3] = {0,0,0};
 float overflowOffset[3] = {0,0,0}; //offset added to angles when they overflow
-
+float output[3] = {0,0,0};
+float prevOutput[3] = {0,0,0};
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
 
@@ -316,11 +317,6 @@ void loop() {
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-            Serial.print(ypr[0] * 180/M_PI + overflowOffset[0]);
-            Serial.print(",");
-            Serial.print(ypr[1] * 180/M_PI + overflowOffset[1]);
-            Serial.print(",");
-            Serial.println(ypr[2] * 180/M_PI + overflowOffset[2]);
 
 for(int i=0;i<3;i++){
   ypr[i]*=180/M_PI;
@@ -350,8 +346,26 @@ for(int i=0;i<3;i++){
   }else if(prevyprQuart==-2 && yprQuart>0){
     overflowOffset[i]+= -360;
   }
+  
   prevypr[i]=ypr[i];
 }
+output[0] = ypr[0] + overflowOffset[0] - millis()/1000;
+if(abs(output[0]-prevOutput[0])>50){
+  Serial.print("ERROR");Serial.print(output[0]-prevOutput[0]);Serial.print("!!!!!!!!!!!!!!!!!!!");
+  overflowOffset[0] -= output[0]-prevOutput[0];
+}
+output[0] = ypr[0] + overflowOffset[0] - millis()/8000;
+
+            Serial.print(ypr[0] + overflowOffset[0] - millis()/8000);
+            Serial.print(",");
+            Serial.print(prevOutput[0]);
+            Serial.print(",");
+            Serial.print(ypr[1] + overflowOffset[1]);
+            Serial.print(",");
+            Serial.println(ypr[2] + overflowOffset[2]);
+            
+prevOutput[0] = output[0];
+
         #endif
 
         #ifdef OUTPUT_READABLE_REALACCEL
