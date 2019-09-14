@@ -349,14 +349,14 @@ for(int i=0;i<3;i++){
   
   prevypr[i]=ypr[i];
 }
-output[0] = ypr[0] + overflowOffset[0] - millis()/1000;
+output[0] = ypr[0] + overflowOffset[0] - millis()/600;
 if(abs(output[0]-prevOutput[0])>50){
   Serial.print("ERROR");Serial.print(output[0]-prevOutput[0]);Serial.print("!!!!!!!!!!!!!!!!!!!");
   overflowOffset[0] -= output[0]-prevOutput[0];
 }
-output[0] = ypr[0] + overflowOffset[0] - millis()/8000;
+output[0] = ypr[0] + overflowOffset[0] - millis()/600;
 
-            Serial.print(ypr[0] + overflowOffset[0] - millis()/8000);
+            Serial.print(ypr[0] + overflowOffset[0] - millis()/600);
             Serial.print(",");
             Serial.print(prevOutput[0]);
             Serial.print(",");
