@@ -48,7 +48,7 @@ while True:
     string = string_n.rstrip()
     print(string)
     #re initializing the array to save on ram only updating when accelerometer recalibrates
-    if(string[0] == "0"):
+    if(True):
         data = []
         temp=string.split(",")
         data.append([int(float(temp[0])),int(float(temp[1])),int(float(temp[2]))])   
@@ -56,17 +56,17 @@ while True:
         temp=string.split(",")
         data.append([int(float(temp[0])),int(float(temp[1])),int(float(temp[2]))])
     bar = browser.find_element_by_class_name("ytp-progress-bar ")
-    if(data[0][0]>35):
+    if(data[0][2]>15):
         scrub(0,1,bar)
-    elif(data[0][0]>35):
+    elif(data[0][2]<-15):
         scrub(0,0,bar)
-    elif(data[0][0]>35):
+    elif(data[0][1]>15):
         buttonClick("play",browser)
-    elif(data[0][0]>35):
-        buttonClick("next",browser)
-    elif(data[0][0]>35):
-        buttonClick("prev",browser)
-    elif(data[0][0]>35):
+    #elif(data[0][1]<-15):
+    #    buttonClick("next",browser)
+    #elif(data[0][0]>35):
+    #    buttonClick("prev",browser)
+    elif(data[0][1]<-15):
         buttonClick("fullscreen",browser)
 #ser.close()
 #browser.close()
