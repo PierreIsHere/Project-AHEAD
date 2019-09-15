@@ -149,6 +149,8 @@ unsigned long resetStart = 0;
 float resetMax = 30;
 float resetValue;
 float prevResetValue = 0;
+float printed[3]={0,0,0};
+float prevPrinted[3]={0,0,0};
     
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
@@ -386,13 +388,21 @@ if(resetProgress>resetCheckpoint){
 
 output[0] = ypr[0] + overflowOffset[0] - millis()/600;
 
+printed[0] = output[0];
+printed[1] = ypr[1] + overflowOffset[1];
+printed[2] = ypr[2] + overflowOffset[2];
+if(abs(printed[0]-prevPrinted[0])>4 || abs(printed[1]-prevPrinted[1])>4 || abs(printed[2]-prevPrinted[2])>4){
+  
             Serial.print(ypr[0] + overflowOffset[0] - millis()/600);
             Serial.print(",");
             Serial.print(ypr[1] + overflowOffset[1]);
             Serial.print(",");
             Serial.println(ypr[2] + overflowOffset[2]);
-            
-prevOutput[0] = output[0];
+            prevPrinted[0] = printed[0];
+            prevPrinted[1] = printed[1];
+            prevPrinted[2] = printed[2];
+}
+prevOutput[0]=output[0];
 
         #endif
 
