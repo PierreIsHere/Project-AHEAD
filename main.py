@@ -45,7 +45,10 @@ data = []
 currentGest=0;
 while True:
     b = ser.readline()
-    string_n = b.decode()
+    try:
+        string_n = b.decode()
+    except:
+        pass
     string = string_n.rstrip()
     print(string)
     #re initializing the array to save on ram only updating when accelerometer recalibrates
